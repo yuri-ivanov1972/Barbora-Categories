@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -16,3 +16,40 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// Category types for scraping
+export interface Category {
+  id: string;
+  name: string;
+  url: string;
+  level: number;
+  parentId: string | null;
+  children: Category[];
+}
+
+export interface FlatCategory {
+  id: string;
+  name: string;
+  url: string;
+  level: number;
+  parentId: string | null;
+  parentName: string | null;
+  fullPath: string;
+}
+
+export interface ScrapeResult {
+  categories: Category[];
+  flatCategories: FlatCategory[];
+  totalCount: number;
+  maxDepth: number;
+  scrapedAt: string;
+  duration: number;
+}
+
+export interface ScrapeStatus {
+  status: 'idle' | 'running' | 'completed' | 'error';
+  progress: number;
+  currentCategory: string | null;
+  message: string | null;
+  result: ScrapeResult | null;
+}
