@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -17,7 +17,27 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
-// Category types for scraping
+// Stored categories table for database persistence
+export const storedCategories = pgTable("stored_categories", {
+  id: varchar("id").primaryKey(),
+  name: text("name").notNull(),
+  url: text("url").notNull().default(""),
+  level: integer("level").notNull(),
+  parentId: varchar("parent_id"),
+  parentName: text("parent_name"),
+  fullPath: text("full_path").notNull(),
+  isGrocery: boolean("is_grocery").notNull().default(true),
+  scrapedAt: timestamp("scraped_at").notNull().defaultNow(),
+});
+
+export const insertStoredCategorySchema = createInsertSchema(storedCategories).omit({
+  scrapedAt: true,
+});
+
+export type InsertStoredCategory = z.infer<typeof insertStoredCategorySchema>;
+export type StoredCategory = typeof storedCategories.$inferSelect;
+
+// Category types for scraping (in-memory)
 export interface Category {
   id: string;
   name: string;
