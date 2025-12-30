@@ -154,6 +154,26 @@ export async function registerRoutes(
     }
   });
 
+  // Update category and all its descendants
+  app.patch('/api/categories/:id/with-descendants', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isGrocery } = req.body;
+      
+      if (typeof isGrocery !== 'boolean') {
+        return res.status(400).json({ error: 'isGrocery must be a boolean' });
+      }
+
+      const count = await storage.updateCategoryWithDescendants(id, isGrocery);
+      res.json({ message: `Updated ${count} categories (including subcategories)`, count });
+    } catch (error) {
+      console.error('Error updating category with descendants:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Failed to update category' 
+      });
+    }
+  });
+
   // Delete all stored categories
   app.delete('/api/categories', async (req, res) => {
     try {

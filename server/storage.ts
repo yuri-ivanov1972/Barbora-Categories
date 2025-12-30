@@ -8,6 +8,7 @@ export interface IStorage {
   saveCategories(categories: InsertStoredCategory[]): Promise<void>;
   updateCategoryGroceryStatus(id: string, isGrocery: boolean): Promise<void>;
   bulkUpdateGroceryStatus(ids: string[], isGrocery: boolean): Promise<void>;
+  updateCategoryWithDescendants(id: string, isGrocery: boolean): Promise<number>;
   deleteAllCategories(): Promise<void>;
   searchCategories(query: string): Promise<StoredCategory[]>;
 }
@@ -52,6 +53,29 @@ export class DatabaseStorage implements IStorage {
         .set({ isGrocery })
         .where(eq(storedCategories.id, id));
     }
+  }
+
+  async updateCategoryWithDescendants(id: string, isGrocery: boolean): Promise<number> {
+    // Get the category to find its name for matching descendants
+    const allCategories = await this.getAllCategories();
+    const targetCategory = allCategories.find(c => c.id === id);
+    
+    if (!targetCategory) return 0;
+    
+    // Find all descendants by matching fullPath prefix
+    const categoryPath = targetCategory.fullPath;
+    const descendantIds = allCategories
+      .filter(c => c.fullPath.startsWith(categoryPath))
+      .map(c => c.id);
+    
+    // Update all matching categories
+    for (const catId of descendantIds) {
+      await db.update(storedCategories)
+        .set({ isGrocery })
+        .where(eq(storedCategories.id, catId));
+    }
+    
+    return descendantIds.length;
   }
 
   async deleteAllCategories(): Promise<void> {

@@ -30,7 +30,8 @@ import {
   Save,
   Search,
   Filter,
-  Trash2
+  Trash2,
+  FolderX
 } from "lucide-react";
 import type { Category, FlatCategory, ScrapeStatus, StoredCategory } from "@shared/schema";
 
@@ -133,12 +134,14 @@ function StoredCategoriesTable({
   categories, 
   selectedIds, 
   onToggleSelect,
-  onToggleGrocery 
+  onToggleGrocery,
+  onMarkWithDescendants
 }: { 
   categories: StoredCategory[];
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onToggleGrocery: (id: string, isGrocery: boolean) => void;
+  onMarkWithDescendants: (id: string, isGrocery: boolean) => void;
 }) {
   return (
     <div className="border rounded-md overflow-hidden">
@@ -160,9 +163,9 @@ function StoredCategoriesTable({
         </div>
         <div className="col-span-1">Level</div>
         <div className="col-span-3">Category</div>
-        <div className="col-span-4">Full Path</div>
+        <div className="col-span-3">Full Path</div>
         <div className="col-span-2">Grocery</div>
-        <div className="col-span-1">Actions</div>
+        <div className="col-span-2">Actions</div>
       </div>
       <ScrollArea className="h-[500px]">
         {categories.map((cat, index) => (
@@ -182,7 +185,7 @@ function StoredCategoriesTable({
               <Badge variant="outline" className="font-mono">{cat.level}</Badge>
             </div>
             <div className="col-span-3 font-medium truncate">{cat.name}</div>
-            <div className="col-span-4 font-mono text-xs text-muted-foreground truncate">
+            <div className="col-span-3 font-mono text-xs text-muted-foreground truncate">
               {cat.fullPath}
             </div>
             <div className="col-span-2">
@@ -195,7 +198,7 @@ function StoredCategoriesTable({
                 {cat.isGrocery ? "Grocery" : "Non-Grocery"}
               </Badge>
             </div>
-            <div className="col-span-1">
+            <div className="col-span-2 flex gap-1">
               <Button 
                 variant="ghost" 
                 size="icon"
@@ -204,6 +207,18 @@ function StoredCategoriesTable({
               >
                 <Filter className="h-4 w-4" />
               </Button>
+              {cat.level === 1 && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => onMarkWithDescendants(cat.id, false)}
+                  data-testid={`mark-all-non-grocery-${cat.id}`}
+                >
+                  <FolderX className="h-3 w-3 mr-1" />
+                  All Non-Grocery
+                </Button>
+              )}
             </div>
           </div>
         ))}
@@ -348,6 +363,20 @@ export default function Home() {
       toast({
         title: "Categories Deleted",
         description: "All stored categories have been removed.",
+      });
+    },
+  });
+
+  const updateWithDescendantsMutation = useMutation({
+    mutationFn: async ({ id, isGrocery }: { id: string; isGrocery: boolean }) => {
+      const res = await apiRequest('PATCH', `/api/categories/${id}/with-descendants`, { isGrocery });
+      return res.json() as Promise<{ count: number; message: string }>;
+    },
+    onSuccess: (data) => {
+      invalidateCategories();
+      toast({
+        title: "Categories Updated",
+        description: `Updated ${data.count} categories (including subcategories).`,
       });
     },
   });
@@ -825,6 +854,7 @@ export default function Home() {
                     selectedIds={selectedIds}
                     onToggleSelect={toggleSelect}
                     onToggleGrocery={(id, isGrocery) => updateGroceryMutation.mutate({ id, isGrocery })}
+                    onMarkWithDescendants={(id, isGrocery) => updateWithDescendantsMutation.mutate({ id, isGrocery })}
                   />
                 ) : storedCategories?.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 text-center">
