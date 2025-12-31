@@ -1,0 +1,60 @@
+2025-12-31 09:36:30.34
+ad7417d3
+User
+7:36:30 AM [express] GET /api/scrape/status 304 in 1ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:36:31.52
+ad7417d3
+User
+7:36:31 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:36:32.70
+ad7417d3
+User
+7:36:32 AM [express] GET /api/scrape/status 304 in 1ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at FrameManager.initialize (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/FrameManager.js:174:38)
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at CdpCDPSession.send (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/CdpSession.js:74:33)
+2025-12-31 09:36:45.12
+ad7417d3
+User
+Scraping error: ProtocolError: Network.enable timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at Connection._rawSend (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:108:26)
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at CallbackRegistry.create (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:25:26)
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at NetworkManager.addClient (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/NetworkManager.js:75:24)
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:103:14)
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at CdpPage._create (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:104:31)
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at /home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Target.js:205:42
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at new Callback (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:107:16)
+2025-12-31 09:36:45.12
+ad7417d3
+User
+at #initialize (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:296:36)
+2025-12-31 09:37:46.96
+ad7417d3
+User
+7:37:46 AM [express] GET /api/scrape/status 200 in 1ms :: {"status":"error","progress":0,"currentCategory":null,"message":"Network.enable timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.","result":null}

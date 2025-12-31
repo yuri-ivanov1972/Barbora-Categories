@@ -283,25 +283,39 @@ export async function startScraping(): Promise<ScrapeResult> {
   try {
     console.log('Starting Puppeteer browser...');
     
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.REPLIT_DEPLOYMENT === '1';
+    
     browser = await puppeteer.launch({
       headless: true,
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
-      protocolTimeout: 120000,
+      protocolTimeout: 180000,
+      timeout: 60000,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-accelerated-2d-canvas',
         '--disable-gpu',
-        '--single-process',
-        '--no-zygote',
-        '--window-size=1920,1080'
+        '--disable-extensions',
+        '--disable-background-networking',
+        '--disable-default-apps',
+        '--disable-sync',
+        '--disable-translate',
+        '--mute-audio',
+        '--hide-scrollbars',
+        '--metrics-recording-only',
+        '--no-first-run',
+        '--safebrowsing-disable-auto-update',
+        ...(isProduction ? [] : ['--single-process', '--no-zygote']),
+        '--window-size=1280,720'
       ]
     });
+    
+    console.log(`Browser launched successfully (production: ${isProduction})`);
 
     const page = await browser.newPage();
     
-    await page.setViewport({ width: 1920, height: 1080 });
+    await page.setViewport({ width: 1280, height: 720 });
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
     // Store the main categories API response
