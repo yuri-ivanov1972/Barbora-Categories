@@ -1,0 +1,120 @@
+2025-12-31 09:25:47.61
+f0e87a43
+User
+7:25:47 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:48.80
+f0e87a43
+User
+7:25:48 AM [express] GET /api/scrape/status 304 in 1ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:49.99
+f0e87a43
+User
+7:25:49 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:51.17
+f0e87a43
+User
+7:25:51 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:52.35
+f0e87a43
+User
+7:25:52 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:53.54
+f0e87a43
+User
+7:25:53 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:54.72
+f0e87a43
+User
+7:25:54 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:55.90
+f0e87a43
+User
+7:25:55 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:57.10
+f0e87a43
+User
+7:25:57 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:58.28
+f0e87a43
+User
+7:25:58 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:25:59.46
+f0e87a43
+User
+7:25:59 AM [express] GET /api/scrape/status 304 in 1ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:26:00.65
+f0e87a43
+User
+7:26:00 AM [express] GET /api/scrape/status 304 in 1ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:26:01.83
+f0e87a43
+User
+7:26:01 AM [express] GET /api/scrape/status 304 in 1ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:26:03.02
+f0e87a43
+User
+7:26:03 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:26:04.20
+f0e87a43
+User
+7:26:04 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:26:05.38
+f0e87a43
+User
+7:26:05 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:26:06.56
+f0e87a43
+User
+7:26:06 AM [express] GET /api/scrape/status 304 in 0ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:26:07.75
+f0e87a43
+User
+7:26:07 AM [express] GET /api/scrape/status 304 in 1ms :: {"status":"running","progress":0,"currentCategory":"Initializing browser...","message":null,"result":null}
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at NetworkManager.addClient (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/NetworkManager.js:75:24)
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at CdpPage._create (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:104:31)
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at new Callback (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:107:16)
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at CdpCDPSession.send (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/CdpSession.js:74:33)
+2025-12-31 09:26:08.93
+f0e87a43
+User
+Scraping error: ProtocolError: Network.enable timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at CallbackRegistry.create (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:25:26)
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at #initialize (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Page.js:296:36)
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at Connection._rawSend (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Connection.js:108:26)
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at /home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Target.js:205:42
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at FrameManager.initialize (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/FrameManager.js:174:38)
+2025-12-31 09:26:08.93
+f0e87a43
+User
+at (/home/runner/workspace/node_modules/puppeteer-core/lib/cjs/puppeteer/common/CallbackRegistry.js:103:14)
+2025-12-31 09:26:08.94
+f0e87a43
+User
+7:26:08 AM [express] GET /api/scrape/status 200 in 0ms :: {"status":"error","progress":0,"currentCategory":null,"message":"Network.enable timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.","result":null}
