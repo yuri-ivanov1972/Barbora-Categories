@@ -31,7 +31,8 @@ import {
   Search,
   Filter,
   Trash2,
-  FolderX
+  FolderX,
+  Link2
 } from "lucide-react";
 import type { Category, FlatCategory, ScrapeStatus, StoredCategory } from "@shared/schema";
 
@@ -162,10 +163,11 @@ function StoredCategoriesTable({
           />
         </div>
         <div className="col-span-1">Level</div>
-        <div className="col-span-3">Category</div>
+        <div className="col-span-2">Category</div>
         <div className="col-span-3">Full Path</div>
-        <div className="col-span-2">Grocery</div>
-        <div className="col-span-2">Actions</div>
+        <div className="col-span-1">Grocery</div>
+        <div className="col-span-1">Rimi ID</div>
+        <div className="col-span-3">Actions</div>
       </div>
       <ScrollArea className="h-[500px]">
         {categories.map((cat, index) => (
@@ -184,21 +186,30 @@ function StoredCategoriesTable({
             <div className="col-span-1">
               <Badge variant="outline" className="font-mono">{cat.level}</Badge>
             </div>
-            <div className="col-span-3 font-medium truncate">{cat.name}</div>
+            <div className="col-span-2 font-medium truncate">{cat.name}</div>
             <div className="col-span-3 font-mono text-xs text-muted-foreground truncate">
               {cat.fullPath}
             </div>
-            <div className="col-span-2">
+            <div className="col-span-1">
               <Badge 
                 variant={cat.isGrocery ? "default" : "secondary"} 
-                className="cursor-pointer"
+                className="cursor-pointer text-xs"
                 onClick={() => onToggleGrocery(cat.id, !cat.isGrocery)}
                 data-testid={`grocery-badge-${cat.id}`}
               >
-                {cat.isGrocery ? "Grocery" : "Non-Grocery"}
+                {cat.isGrocery ? "Yes" : "No"}
               </Badge>
             </div>
-            <div className="col-span-2 flex gap-1">
+            <div className="col-span-1">
+              {cat.rimiCategoryId ? (
+                <Badge variant="outline" className="font-mono text-xs" data-testid={`rimi-id-${cat.id}`}>
+                  {cat.rimiCategoryId}
+                </Badge>
+              ) : (
+                <span className="text-muted-foreground text-xs">-</span>
+              )}
+            </div>
+            <div className="col-span-3 flex gap-1 flex-wrap">
               <Button 
                 variant="ghost" 
                 size="icon"
@@ -381,6 +392,27 @@ export default function Home() {
     },
   });
 
+  const matchRimiMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest('POST', '/api/categories/match-rimi', {});
+      return res.json() as Promise<{ matched: number; unmatched: number; total: number; message: string }>;
+    },
+    onSuccess: (data) => {
+      invalidateCategories();
+      toast({
+        title: "Matching Complete",
+        description: `Matched ${data.matched} of ${data.total} grocery categories with Rimi.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Matching Failed",
+        description: error instanceof Error ? error.message : "Failed to match categories",
+        variant: "destructive",
+      });
+    },
+  });
+
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
       const newSet = new Set(prev);
@@ -451,7 +483,7 @@ export default function Home() {
       ? storedCategories.filter(c => c.isGrocery)
       : storedCategories;
     
-    const headers = ['ID', 'Name', 'URL', 'Level', 'Parent ID', 'Parent Name', 'Full Path', 'Is Grocery'];
+    const headers = ['ID', 'Name', 'URL', 'Level', 'Parent ID', 'Parent Name', 'Full Path', 'Is Grocery', 'Rimi Category ID'];
     const rows = dataToExport.map(cat => [
       cat.id,
       cat.name,
@@ -460,7 +492,8 @@ export default function Home() {
       cat.parentId || '',
       cat.parentName || '',
       cat.fullPath,
-      cat.isGrocery ? 'Yes' : 'No'
+      cat.isGrocery ? 'Yes' : 'No',
+      cat.rimiCategoryId?.toString() || ''
     ]);
     
     const csvContent = [
@@ -487,6 +520,7 @@ export default function Home() {
 
   const groceryCount = storedCategories?.filter(c => c.isGrocery).length || 0;
   const nonGroceryCount = (storedCategories?.length || 0) - groceryCount;
+  const matchedCount = storedCategories?.filter(c => c.rimiCategoryId !== null).length || 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -736,7 +770,7 @@ export default function Home() {
           {/* Database Tab */}
           <TabsContent value="database" className="space-y-8">
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard 
                 title="Total Stored" 
                 value={storedCategories?.length ?? 0} 
@@ -751,6 +785,11 @@ export default function Home() {
                 title="Non-Grocery" 
                 value={nonGroceryCount} 
                 icon={Filter} 
+              />
+              <StatCard 
+                title="Matched with Rimi" 
+                value={matchedCount} 
+                icon={Link2} 
               />
             </div>
 
@@ -817,6 +856,19 @@ export default function Home() {
                   >
                     <Download className="h-4 w-4" />
                     Export CSV
+                  </Button>
+                  <Button 
+                    variant="default"
+                    onClick={() => matchRimiMutation.mutate()}
+                    disabled={!storedCategories?.length || matchRimiMutation.isPending}
+                    data-testid="button-match-rimi"
+                  >
+                    {matchRimiMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Link2 className="h-4 w-4" />
+                    )}
+                    Match with Rimi
                   </Button>
                   <Button 
                     variant="destructive"

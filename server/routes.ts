@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { getScrapeStatus, startScraping, resetScrapeStatus } from "./scraper";
 import { storage } from "./storage";
+import { matchBarboraWithRimi } from "./rimi-db";
 import type { InsertStoredCategory } from "@shared/schema";
 
 export async function registerRoutes(
@@ -183,6 +184,57 @@ export async function registerRoutes(
       console.error('Error deleting categories:', error);
       res.status(500).json({ 
         error: error instanceof Error ? error.message : 'Failed to delete categories' 
+      });
+    }
+  });
+
+  // Match Barbora categories with Rimi categories
+  app.post('/api/categories/match-rimi', async (req, res) => {
+    try {
+      const allCategories = await storage.getAllCategories();
+      
+      if (allCategories.length === 0) {
+        return res.status(400).json({ 
+          error: 'No categories found. Please save categories first.' 
+        });
+      }
+
+      // Only pass grocery categories for matching
+      const groceryCategories = allCategories.filter(c => c.isGrocery);
+      
+      if (groceryCategories.length === 0) {
+        return res.status(400).json({ 
+          error: 'No grocery categories found. Mark some categories as grocery first.' 
+        });
+      }
+
+      const barboraCategories = groceryCategories.map(c => ({
+        id: c.id,
+        name: c.name,
+        isGrocery: c.isGrocery
+      }));
+
+      const matchResult = await matchBarboraWithRimi(barboraCategories);
+      
+      // Update matched categories with Rimi category IDs
+      const updates = matchResult.matchedCategories.map(m => ({
+        id: m.barboraId,
+        rimiCategoryId: m.rimiCategoryId
+      }));
+      
+      await storage.bulkUpdateRimiCategoryIds(updates);
+
+      res.json({
+        message: `Matched ${matchResult.matched} of ${matchResult.total} grocery categories`,
+        matched: matchResult.matched,
+        unmatched: matchResult.unmatched,
+        total: matchResult.total,
+        matchedCategories: matchResult.matchedCategories.slice(0, 10)
+      });
+    } catch (error) {
+      console.error('Error matching categories:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Failed to match categories' 
       });
     }
   });

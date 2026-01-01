@@ -11,6 +11,8 @@ export interface IStorage {
   updateCategoryWithDescendants(id: string, isGrocery: boolean): Promise<number>;
   deleteAllCategories(): Promise<void>;
   searchCategories(query: string): Promise<StoredCategory[]>;
+  updateRimiCategoryId(id: string, rimiCategoryId: number | null): Promise<void>;
+  bulkUpdateRimiCategoryIds(updates: { id: string; rimiCategoryId: number }[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -93,6 +95,22 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(storedCategories.fullPath);
+  }
+
+  async updateRimiCategoryId(id: string, rimiCategoryId: number | null): Promise<void> {
+    await db.update(storedCategories)
+      .set({ rimiCategoryId })
+      .where(eq(storedCategories.id, id));
+  }
+
+  async bulkUpdateRimiCategoryIds(updates: { id: string; rimiCategoryId: number }[]): Promise<void> {
+    if (updates.length === 0) return;
+    
+    for (const update of updates) {
+      await db.update(storedCategories)
+        .set({ rimiCategoryId: update.rimiCategoryId })
+        .where(eq(storedCategories.id, update.id));
+    }
   }
 }
 
