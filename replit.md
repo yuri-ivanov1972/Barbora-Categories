@@ -38,16 +38,32 @@ The scraper maintains in-memory state for the current scraping operation. Result
 5. Completed results include both nested tree structure and flattened category list
 
 ### Database Schema
-The project includes Drizzle ORM configuration with PostgreSQL, though the core scraping functionality uses in-memory storage. The database schema defines a basic users table for potential future authentication features. The scraping results use TypeScript interfaces defined in `shared/schema.ts`:
+The project uses Drizzle ORM with PostgreSQL for persistent storage. The database schema includes:
+- `stored_categories`: Persisted category data with grocery classification and Rimi category matching
+  - `id`, `name`, `url`, `level`, `parentId`, `parentName`, `fullPath`
+  - `isGrocery`: Boolean flag for filtering grocery vs non-grocery categories
+  - `rimiCategoryId`: Foreign reference to matched Rimi supermarket category
+
+The scraping results use TypeScript interfaces defined in `shared/schema.ts`:
 - `Category`: Nested hierarchical structure with children
 - `FlatCategory`: Denormalized flat list with parent references
 - `ScrapeResult`: Complete scrape output with metadata
 - `ScrapeStatus`: Real-time scraping progress state
+- `StoredCategory`: Database-persisted category with grocery flag and Rimi match
+
+### Rimi Category Matching
+The application supports matching Barbora categories with Rimi supermarket categories:
+- External Rimi database connected via `CATEGORIES_DB_URL` secret
+- Reads from `normalized_categories` table (columns: `category_id`, `name_lv`, `name_en`)
+- Matching uses normalized string comparison (lowercase, trimmed, diacritics removed)
+- Only grocery-flagged Barbora categories are eligible for matching
+- Results stored in `rimiCategoryId` column for cross-reference
 
 ## External Dependencies
 
 ### Third-Party Services
 - **Barbora.lv**: Target website for category scraping (external grocery e-commerce site)
+- **Rimi Categories Database**: External PostgreSQL database for category cross-referencing (via `CATEGORIES_DB_URL`)
 
 ### Key Libraries
 - **Puppeteer**: Headless Chrome automation for web scraping
