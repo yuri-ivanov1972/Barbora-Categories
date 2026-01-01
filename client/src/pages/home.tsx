@@ -35,7 +35,8 @@ import {
   Link2
 } from "lucide-react";
 import type { Category, FlatCategory, ScrapeStatus, StoredCategory, RimiCategory } from "@shared/schema";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 function CategoryTreeItem({ 
   category, 
@@ -132,6 +133,77 @@ function CategoryTable({ categories }: { categories: FlatCategory[] }) {
   );
 }
 
+function RimiCategorySelector({
+  categoryId,
+  currentRimiId,
+  rimiCategories,
+  rimiLookup,
+  onUpdate
+}: {
+  categoryId: string;
+  currentRimiId: number | null;
+  rimiCategories: RimiCategory[];
+  rimiLookup: Map<number, RimiCategory>;
+  onUpdate: (id: string, rimiCategoryId: number | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rimiMatch = currentRimiId ? rimiLookup.get(currentRimiId) : null;
+  
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="h-8 text-xs justify-start w-full truncate"
+          data-testid={`rimi-select-${categoryId}`}
+        >
+          {rimiMatch ? (
+            <span className="truncate">{rimiMatch.name_lv}</span>
+          ) : currentRimiId ? (
+            <span className="truncate">ID: {currentRimiId}</span>
+          ) : (
+            <span className="text-muted-foreground">Select Rimi...</span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search Rimi categories..." />
+          <CommandList>
+            <CommandEmpty>No category found.</CommandEmpty>
+            <CommandGroup>
+              <CommandItem
+                onSelect={() => {
+                  onUpdate(categoryId, null);
+                  setOpen(false);
+                }}
+              >
+                <span className="text-muted-foreground">None</span>
+              </CommandItem>
+              {rimiCategories.map((rimi) => (
+                <CommandItem
+                  key={rimi.category_id}
+                  value={`${rimi.name_lv} ${rimi.name_en || ''}`}
+                  onSelect={() => {
+                    onUpdate(categoryId, rimi.category_id);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="truncate">
+                    {rimi.name_lv}
+                    {rimi.name_en && <span className="text-muted-foreground ml-1">({rimi.name_en})</span>}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function StoredCategoriesTable({ 
   categories, 
   selectedIds, 
@@ -177,92 +249,69 @@ function StoredCategoriesTable({
         <div className="col-span-2">Actions</div>
       </div>
       <ScrollArea className="h-[500px]">
-        {categories.map((cat, index) => {
-          const rimiMatch = cat.rimiCategoryId ? rimiLookup.get(cat.rimiCategoryId) : null;
-          return (
-            <div 
-              key={cat.id} 
-              className={`grid grid-cols-12 gap-4 p-3 text-sm items-center ${index % 2 === 0 ? '' : 'bg-muted/20'}`}
-              data-testid={`stored-row-${cat.id}`}
-            >
-              <div className="col-span-1">
-                <Checkbox 
-                  checked={selectedIds.has(cat.id)}
-                  onCheckedChange={() => onToggleSelect(cat.id)}
-                  data-testid={`checkbox-${cat.id}`}
-                />
-              </div>
-              <div className="col-span-1">
-                <Badge variant="outline" className="font-mono">{cat.level}</Badge>
-              </div>
-              <div className="col-span-2 font-medium truncate">{cat.name}</div>
-              <div className="col-span-2 font-mono text-xs text-muted-foreground truncate">
-                {cat.fullPath}
-              </div>
-              <div className="col-span-1">
-                <Badge 
-                  variant={cat.isGrocery ? "default" : "secondary"} 
-                  className="cursor-pointer text-xs"
-                  onClick={() => onToggleGrocery(cat.id, !cat.isGrocery)}
-                  data-testid={`grocery-badge-${cat.id}`}
-                >
-                  {cat.isGrocery ? "Yes" : "No"}
-                </Badge>
-              </div>
-              <div className="col-span-3">
-                <Select
-                  value={cat.rimiCategoryId?.toString() || "none"}
-                  onValueChange={(value) => {
-                    const newId = value === "none" ? null : parseInt(value, 10);
-                    onUpdateRimiCategory(cat.id, newId);
-                  }}
-                  data-testid={`rimi-select-${cat.id}`}
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue>
-                      {rimiMatch ? rimiMatch.name_lv : (cat.rimiCategoryId ? `ID: ${cat.rimiCategoryId}` : "Select Rimi...")}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60">
-                    <SelectItem value="none">
-                      <span className="text-muted-foreground">None</span>
-                    </SelectItem>
-                    {rimiCategories.map((rimi) => (
-                      <SelectItem key={rimi.category_id} value={rimi.category_id.toString()}>
-                        <span className="truncate">
-                          {rimi.name_lv}
-                          {rimi.name_en && <span className="text-muted-foreground ml-1">({rimi.name_en})</span>}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-2 flex gap-1 flex-wrap">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => onToggleGrocery(cat.id, !cat.isGrocery)}
-                  data-testid={`toggle-grocery-${cat.id}`}
-                >
-                  <Filter className="h-4 w-4" />
-                </Button>
-                {cat.level === 1 && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => onMarkWithDescendants(cat.id, false)}
-                    data-testid={`mark-all-non-grocery-${cat.id}`}
-                  >
-                    <FolderX className="h-3 w-3 mr-1" />
-                    All Non-Grocery
-                  </Button>
-                )}
-              </div>
+        {categories.map((cat, index) => (
+          <div 
+            key={cat.id} 
+            className={`grid grid-cols-12 gap-4 p-3 text-sm items-center ${index % 2 === 0 ? '' : 'bg-muted/20'}`}
+            data-testid={`stored-row-${cat.id}`}
+          >
+            <div className="col-span-1">
+              <Checkbox 
+                checked={selectedIds.has(cat.id)}
+                onCheckedChange={() => onToggleSelect(cat.id)}
+                data-testid={`checkbox-${cat.id}`}
+              />
             </div>
-          );
-        })}
+            <div className="col-span-1">
+              <Badge variant="outline" className="font-mono">{cat.level}</Badge>
+            </div>
+            <div className="col-span-2 font-medium truncate">{cat.name}</div>
+            <div className="col-span-2 font-mono text-xs text-muted-foreground truncate">
+              {cat.fullPath}
+            </div>
+            <div className="col-span-1">
+              <Badge 
+                variant={cat.isGrocery ? "default" : "secondary"} 
+                className="cursor-pointer text-xs"
+                onClick={() => onToggleGrocery(cat.id, !cat.isGrocery)}
+                data-testid={`grocery-badge-${cat.id}`}
+              >
+                {cat.isGrocery ? "Yes" : "No"}
+              </Badge>
+            </div>
+            <div className="col-span-3">
+              <RimiCategorySelector
+                categoryId={cat.id}
+                currentRimiId={cat.rimiCategoryId}
+                rimiCategories={rimiCategories}
+                rimiLookup={rimiLookup}
+                onUpdate={onUpdateRimiCategory}
+              />
+            </div>
+            <div className="col-span-2 flex gap-1 flex-wrap">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => onToggleGrocery(cat.id, !cat.isGrocery)}
+                data-testid={`toggle-grocery-${cat.id}`}
+              >
+                <Filter className="h-4 w-4" />
+              </Button>
+              {cat.level === 1 && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => onMarkWithDescendants(cat.id, false)}
+                  data-testid={`mark-all-non-grocery-${cat.id}`}
+                >
+                  <FolderX className="h-3 w-3 mr-1" />
+                  All Non-Grocery
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
       </ScrollArea>
     </div>
   );
