@@ -34,7 +34,8 @@ import {
   FolderX,
   Link2
 } from "lucide-react";
-import type { Category, FlatCategory, ScrapeStatus, StoredCategory } from "@shared/schema";
+import type { Category, FlatCategory, ScrapeStatus, StoredCategory, RimiCategory } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function CategoryTreeItem({ 
   category, 
@@ -136,14 +137,20 @@ function StoredCategoriesTable({
   selectedIds, 
   onToggleSelect,
   onToggleGrocery,
-  onMarkWithDescendants
+  onMarkWithDescendants,
+  rimiCategories,
+  onUpdateRimiCategory
 }: { 
   categories: StoredCategory[];
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onToggleGrocery: (id: string, isGrocery: boolean) => void;
   onMarkWithDescendants: (id: string, isGrocery: boolean) => void;
+  rimiCategories: RimiCategory[];
+  onUpdateRimiCategory: (id: string, rimiCategoryId: number | null) => void;
 }) {
+  const rimiLookup = new Map(rimiCategories.map(r => [r.category_id, r]));
+  
   return (
     <div className="border rounded-md overflow-hidden">
       <div className="grid grid-cols-12 gap-4 bg-muted/50 p-3 text-xs font-medium text-muted-foreground border-b">
@@ -164,75 +171,98 @@ function StoredCategoriesTable({
         </div>
         <div className="col-span-1">Level</div>
         <div className="col-span-2">Category</div>
-        <div className="col-span-3">Full Path</div>
+        <div className="col-span-2">Full Path</div>
         <div className="col-span-1">Grocery</div>
-        <div className="col-span-1">Rimi ID</div>
-        <div className="col-span-3">Actions</div>
+        <div className="col-span-3">Rimi Category</div>
+        <div className="col-span-2">Actions</div>
       </div>
       <ScrollArea className="h-[500px]">
-        {categories.map((cat, index) => (
-          <div 
-            key={cat.id} 
-            className={`grid grid-cols-12 gap-4 p-3 text-sm items-center ${index % 2 === 0 ? '' : 'bg-muted/20'}`}
-            data-testid={`stored-row-${cat.id}`}
-          >
-            <div className="col-span-1">
-              <Checkbox 
-                checked={selectedIds.has(cat.id)}
-                onCheckedChange={() => onToggleSelect(cat.id)}
-                data-testid={`checkbox-${cat.id}`}
-              />
-            </div>
-            <div className="col-span-1">
-              <Badge variant="outline" className="font-mono">{cat.level}</Badge>
-            </div>
-            <div className="col-span-2 font-medium truncate">{cat.name}</div>
-            <div className="col-span-3 font-mono text-xs text-muted-foreground truncate">
-              {cat.fullPath}
-            </div>
-            <div className="col-span-1">
-              <Badge 
-                variant={cat.isGrocery ? "default" : "secondary"} 
-                className="cursor-pointer text-xs"
-                onClick={() => onToggleGrocery(cat.id, !cat.isGrocery)}
-                data-testid={`grocery-badge-${cat.id}`}
-              >
-                {cat.isGrocery ? "Yes" : "No"}
-              </Badge>
-            </div>
-            <div className="col-span-1">
-              {cat.rimiCategoryId ? (
-                <Badge variant="outline" className="font-mono text-xs" data-testid={`rimi-id-${cat.id}`}>
-                  {cat.rimiCategoryId}
-                </Badge>
-              ) : (
-                <span className="text-muted-foreground text-xs">-</span>
-              )}
-            </div>
-            <div className="col-span-3 flex gap-1 flex-wrap">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => onToggleGrocery(cat.id, !cat.isGrocery)}
-                data-testid={`toggle-grocery-${cat.id}`}
-              >
-                <Filter className="h-4 w-4" />
-              </Button>
-              {cat.level === 1 && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => onMarkWithDescendants(cat.id, false)}
-                  data-testid={`mark-all-non-grocery-${cat.id}`}
+        {categories.map((cat, index) => {
+          const rimiMatch = cat.rimiCategoryId ? rimiLookup.get(cat.rimiCategoryId) : null;
+          return (
+            <div 
+              key={cat.id} 
+              className={`grid grid-cols-12 gap-4 p-3 text-sm items-center ${index % 2 === 0 ? '' : 'bg-muted/20'}`}
+              data-testid={`stored-row-${cat.id}`}
+            >
+              <div className="col-span-1">
+                <Checkbox 
+                  checked={selectedIds.has(cat.id)}
+                  onCheckedChange={() => onToggleSelect(cat.id)}
+                  data-testid={`checkbox-${cat.id}`}
+                />
+              </div>
+              <div className="col-span-1">
+                <Badge variant="outline" className="font-mono">{cat.level}</Badge>
+              </div>
+              <div className="col-span-2 font-medium truncate">{cat.name}</div>
+              <div className="col-span-2 font-mono text-xs text-muted-foreground truncate">
+                {cat.fullPath}
+              </div>
+              <div className="col-span-1">
+                <Badge 
+                  variant={cat.isGrocery ? "default" : "secondary"} 
+                  className="cursor-pointer text-xs"
+                  onClick={() => onToggleGrocery(cat.id, !cat.isGrocery)}
+                  data-testid={`grocery-badge-${cat.id}`}
                 >
-                  <FolderX className="h-3 w-3 mr-1" />
-                  All Non-Grocery
+                  {cat.isGrocery ? "Yes" : "No"}
+                </Badge>
+              </div>
+              <div className="col-span-3">
+                <Select
+                  value={cat.rimiCategoryId?.toString() || "none"}
+                  onValueChange={(value) => {
+                    const newId = value === "none" ? null : parseInt(value, 10);
+                    onUpdateRimiCategory(cat.id, newId);
+                  }}
+                  data-testid={`rimi-select-${cat.id}`}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue>
+                      {rimiMatch ? rimiMatch.name_lv : (cat.rimiCategoryId ? `ID: ${cat.rimiCategoryId}` : "Select Rimi...")}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    <SelectItem value="none">
+                      <span className="text-muted-foreground">None</span>
+                    </SelectItem>
+                    {rimiCategories.map((rimi) => (
+                      <SelectItem key={rimi.category_id} value={rimi.category_id.toString()}>
+                        <span className="truncate">
+                          {rimi.name_lv}
+                          {rimi.name_en && <span className="text-muted-foreground ml-1">({rimi.name_en})</span>}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2 flex gap-1 flex-wrap">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => onToggleGrocery(cat.id, !cat.isGrocery)}
+                  data-testid={`toggle-grocery-${cat.id}`}
+                >
+                  <Filter className="h-4 w-4" />
                 </Button>
-              )}
+                {cat.level === 1 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => onMarkWithDescendants(cat.id, false)}
+                    data-testid={`mark-all-non-grocery-${cat.id}`}
+                  >
+                    <FolderX className="h-3 w-3 mr-1" />
+                    All Non-Grocery
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </ScrollArea>
     </div>
   );
@@ -306,6 +336,10 @@ export default function Home() {
       if (!res.ok) throw new Error('Failed to fetch categories');
       return res.json();
     },
+  });
+
+  const { data: rimiCategories } = useQuery<RimiCategory[]>({
+    queryKey: ['/api/rimi-categories'],
   });
 
   const scrapeMutation = useMutation({
@@ -389,6 +423,15 @@ export default function Home() {
         title: "Categories Updated",
         description: `Updated ${data.count} categories (including subcategories).`,
       });
+    },
+  });
+
+  const updateRimiCategoryMutation = useMutation({
+    mutationFn: async ({ id, rimiCategoryId }: { id: string; rimiCategoryId: number | null }) => {
+      return apiRequest('PATCH', `/api/categories/${id}/rimi`, { rimiCategoryId });
+    },
+    onSuccess: () => {
+      invalidateCategories();
     },
   });
 
@@ -483,18 +526,24 @@ export default function Home() {
       ? storedCategories.filter(c => c.isGrocery)
       : storedCategories;
     
-    const headers = ['ID', 'Name', 'URL', 'Level', 'Parent ID', 'Parent Name', 'Full Path', 'Is Grocery', 'Rimi Category ID'];
-    const rows = dataToExport.map(cat => [
-      cat.id,
-      cat.name,
-      cat.url,
-      cat.level.toString(),
-      cat.parentId || '',
-      cat.parentName || '',
-      cat.fullPath,
-      cat.isGrocery ? 'Yes' : 'No',
-      cat.rimiCategoryId?.toString() || ''
-    ]);
+    const rimiLookup = new Map((rimiCategories || []).map(r => [r.category_id, r]));
+    
+    const headers = ['ID', 'Name', 'URL', 'Level', 'Parent ID', 'Parent Name', 'Full Path', 'Is Grocery', 'Rimi Category ID', 'Rimi Category Name'];
+    const rows = dataToExport.map(cat => {
+      const rimiMatch = cat.rimiCategoryId ? rimiLookup.get(cat.rimiCategoryId) : null;
+      return [
+        cat.id,
+        cat.name,
+        cat.url,
+        cat.level.toString(),
+        cat.parentId || '',
+        cat.parentName || '',
+        cat.fullPath,
+        cat.isGrocery ? 'Yes' : 'No',
+        cat.rimiCategoryId?.toString() || '',
+        rimiMatch?.name_lv || ''
+      ];
+    });
     
     const csvContent = [
       headers.join(','),
@@ -907,6 +956,8 @@ export default function Home() {
                     onToggleSelect={toggleSelect}
                     onToggleGrocery={(id, isGrocery) => updateGroceryMutation.mutate({ id, isGrocery })}
                     onMarkWithDescendants={(id, isGrocery) => updateWithDescendantsMutation.mutate({ id, isGrocery })}
+                    rimiCategories={rimiCategories || []}
+                    onUpdateRimiCategory={(id, rimiCategoryId) => updateRimiCategoryMutation.mutate({ id, rimiCategoryId })}
                   />
                 ) : storedCategories?.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 text-center">

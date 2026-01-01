@@ -74,3 +74,12 @@ export interface ScrapeStatus {
   message: string | null;
   result: ScrapeResult | null;
 }
+
+export interface RimiCategory {
+  category_id: number;
+  rimi_category_code: string;
+  name_lv: string;
+  name_en: string | null;
+  parent_category_id: number | null;
+  level: number;
+}

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { getScrapeStatus, startScraping, resetScrapeStatus } from "./scraper";
 import { storage } from "./storage";
-import { matchBarboraWithRimi } from "./rimi-db";
+import { matchBarboraWithRimi, getRimiCategories, RimiCategory } from "./rimi-db";
 import type { InsertStoredCategory } from "@shared/schema";
 
 export async function registerRoutes(
@@ -184,6 +184,35 @@ export async function registerRoutes(
       console.error('Error deleting categories:', error);
       res.status(500).json({ 
         error: error instanceof Error ? error.message : 'Failed to delete categories' 
+      });
+    }
+  });
+
+  // Get all Rimi categories
+  app.get('/api/rimi-categories', async (req, res) => {
+    try {
+      const categories = await getRimiCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error('Error fetching Rimi categories:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch Rimi categories' 
+      });
+    }
+  });
+
+  // Update Rimi category ID for a single category
+  app.patch('/api/categories/:id/rimi', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { rimiCategoryId } = req.body;
+      
+      await storage.updateRimiCategoryId(id, rimiCategoryId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error updating Rimi category:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Failed to update Rimi category' 
       });
     }
   });
