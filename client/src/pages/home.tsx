@@ -225,7 +225,7 @@ function StoredCategoriesTable({
   
   return (
     <div className="border rounded-md overflow-hidden">
-      <div className="grid grid-cols-12 gap-4 bg-muted/50 p-3 text-xs font-medium text-muted-foreground border-b">
+      <div className="grid grid-cols-13 gap-3 bg-muted/50 p-3 text-xs font-medium text-muted-foreground border-b">
         <div className="col-span-1">
           <Checkbox 
             checked={selectedIds.size === categories.length && categories.length > 0}
@@ -241,6 +241,7 @@ function StoredCategoriesTable({
             data-testid="checkbox-select-all"
           />
         </div>
+        <div className="col-span-1">ID</div>
         <div className="col-span-1">Level</div>
         <div className="col-span-2">Category</div>
         <div className="col-span-2">Full Path</div>
@@ -252,7 +253,7 @@ function StoredCategoriesTable({
         {categories.map((cat, index) => (
           <div 
             key={cat.id} 
-            className={`grid grid-cols-12 gap-4 p-3 text-sm items-center ${index % 2 === 0 ? '' : 'bg-muted/20'}`}
+            className={`grid grid-cols-13 gap-3 p-3 text-sm items-center ${index % 2 === 0 ? '' : 'bg-muted/20'}`}
             data-testid={`stored-row-${cat.id}`}
           >
             <div className="col-span-1">
@@ -261,6 +262,16 @@ function StoredCategoriesTable({
                 onCheckedChange={() => onToggleSelect(cat.id)}
                 data-testid={`checkbox-${cat.id}`}
               />
+            </div>
+            <div className="col-span-1">
+              <span 
+                className="font-mono text-xs cursor-pointer hover:text-foreground text-muted-foreground"
+                onClick={() => navigator.clipboard.writeText(cat.id)}
+                title="Click to copy"
+                data-testid={`id-${cat.id}`}
+              >
+                {cat.id.slice(0, 8)}
+              </span>
             </div>
             <div className="col-span-1">
               <Badge variant="outline" className="font-mono">{cat.level}</Badge>
