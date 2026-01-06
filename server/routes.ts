@@ -269,5 +269,47 @@ export async function registerRoutes(
     }
   });
 
+  // Populate missing Rimi category names for already-matched categories
+  app.post('/api/categories/populate-rimi-names', async (req, res) => {
+    try {
+      const allCategories = await storage.getAllCategories();
+      
+      // Find categories that have rimiCategoryId but no rimiCategoryName
+      const missingNames = allCategories.filter(c => c.rimiCategoryId && !c.rimiCategoryName);
+      
+      if (missingNames.length === 0) {
+        return res.json({ 
+          message: 'All matched categories already have names',
+          updated: 0
+        });
+      }
+
+      // Get Rimi categories to look up names
+      const rimiCategories = await getRimiCategories();
+      const rimiLookup = new Map(rimiCategories.map(r => [r.category_id, r.name_lv]));
+      
+      // Update each category with the name
+      let updated = 0;
+      for (const cat of missingNames) {
+        const rimiName = rimiLookup.get(cat.rimiCategoryId!);
+        if (rimiName) {
+          await storage.updateRimiCategory(cat.id, cat.rimiCategoryId, rimiName);
+          updated++;
+        }
+      }
+
+      res.json({
+        message: `Populated ${updated} missing Rimi category names`,
+        updated,
+        total: missingNames.length
+      });
+    } catch (error) {
+      console.error('Error populating Rimi names:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Failed to populate names' 
+      });
+    }
+  });
+
   return httpServer;
 }
