@@ -514,27 +514,6 @@ export default function Home() {
     },
   });
 
-  const populateRimiNamesMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest('POST', '/api/categories/populate-rimi-names', {});
-      return res.json() as Promise<{ updated: number; total: number; message: string }>;
-    },
-    onSuccess: (data) => {
-      invalidateCategories();
-      toast({
-        title: "Names Populated",
-        description: data.message,
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed",
-        description: error instanceof Error ? error.message : "Failed to populate names",
-        variant: "destructive",
-      });
-    },
-  });
-
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
       const newSet = new Set(prev);
@@ -997,19 +976,6 @@ export default function Home() {
                       <Link2 className="h-4 w-4" />
                     )}
                     Match with Rimi
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => populateRimiNamesMutation.mutate()}
-                    disabled={!storedCategories?.length || populateRimiNamesMutation.isPending}
-                    data-testid="button-populate-rimi-names"
-                  >
-                    {populateRimiNamesMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4" />
-                    )}
-                    Populate Names
                   </Button>
                   <Button 
                     variant="destructive"
