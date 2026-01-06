@@ -201,13 +201,13 @@ export async function registerRoutes(
     }
   });
 
-  // Update Rimi category ID for a single category
+  // Update Rimi category for a single category
   app.patch('/api/categories/:id/rimi', async (req, res) => {
     try {
       const { id } = req.params;
-      const { rimiCategoryId } = req.body;
+      const { rimiCategoryId, rimiCategoryName } = req.body;
       
-      await storage.updateRimiCategoryId(id, rimiCategoryId);
+      await storage.updateRimiCategory(id, rimiCategoryId, rimiCategoryName);
       res.json({ success: true });
     } catch (error) {
       console.error('Error updating Rimi category:', error);
@@ -245,13 +245,14 @@ export async function registerRoutes(
 
       const matchResult = await matchBarboraWithRimi(barboraCategories);
       
-      // Update matched categories with Rimi category IDs
+      // Update matched categories with Rimi category IDs and names
       const updates = matchResult.matchedCategories.map(m => ({
         id: m.barboraId,
-        rimiCategoryId: m.rimiCategoryId
+        rimiCategoryId: m.rimiCategoryId,
+        rimiCategoryName: m.rimiName
       }));
       
-      await storage.bulkUpdateRimiCategoryIds(updates);
+      await storage.bulkUpdateRimiCategories(updates);
 
       res.json({
         message: `Matched ${matchResult.matched} of ${matchResult.total} grocery categories`,

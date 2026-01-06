@@ -136,18 +136,17 @@ function CategoryTable({ categories }: { categories: FlatCategory[] }) {
 function RimiCategorySelector({
   categoryId,
   currentRimiId,
+  currentRimiName,
   rimiCategories,
-  rimiLookup,
   onUpdate
 }: {
   categoryId: string;
   currentRimiId: number | null;
+  currentRimiName: string | null;
   rimiCategories: RimiCategory[];
-  rimiLookup: Map<number, RimiCategory>;
-  onUpdate: (id: string, rimiCategoryId: number | null) => void;
+  onUpdate: (id: string, rimiCategoryId: number | null, rimiCategoryName: string | null) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const rimiMatch = currentRimiId ? rimiLookup.get(currentRimiId) : null;
   
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -158,8 +157,8 @@ function RimiCategorySelector({
           className="h-8 text-xs justify-start w-full truncate"
           data-testid={`rimi-select-${categoryId}`}
         >
-          {rimiMatch ? (
-            <span className="truncate">{rimiMatch.name_lv}</span>
+          {currentRimiName ? (
+            <span className="truncate">{currentRimiName}</span>
           ) : currentRimiId ? (
             <span className="truncate">ID: {currentRimiId}</span>
           ) : (
@@ -175,7 +174,7 @@ function RimiCategorySelector({
             <CommandGroup>
               <CommandItem
                 onSelect={() => {
-                  onUpdate(categoryId, null);
+                  onUpdate(categoryId, null, null);
                   setOpen(false);
                 }}
               >
@@ -186,7 +185,7 @@ function RimiCategorySelector({
                   key={rimi.category_id}
                   value={`${rimi.name_lv} ${rimi.name_en || ''}`}
                   onSelect={() => {
-                    onUpdate(categoryId, rimi.category_id);
+                    onUpdate(categoryId, rimi.category_id, rimi.name_lv);
                     setOpen(false);
                   }}
                 >
@@ -219,9 +218,8 @@ function StoredCategoriesTable({
   onToggleGrocery: (id: string, isGrocery: boolean) => void;
   onMarkWithDescendants: (id: string, isGrocery: boolean) => void;
   rimiCategories: RimiCategory[];
-  onUpdateRimiCategory: (id: string, rimiCategoryId: number | null) => void;
+  onUpdateRimiCategory: (id: string, rimiCategoryId: number | null, rimiCategoryName: string | null) => void;
 }) {
-  const rimiLookup = new Map(rimiCategories.map(r => [r.category_id, r]));
   
   return (
     <div className="border rounded-md overflow-hidden">
@@ -294,8 +292,8 @@ function StoredCategoriesTable({
               <RimiCategorySelector
                 categoryId={cat.id}
                 currentRimiId={cat.rimiCategoryId}
+                currentRimiName={cat.rimiCategoryName}
                 rimiCategories={rimiCategories}
-                rimiLookup={rimiLookup}
                 onUpdate={onUpdateRimiCategory}
               />
             </div>
@@ -487,8 +485,8 @@ export default function Home() {
   });
 
   const updateRimiCategoryMutation = useMutation({
-    mutationFn: async ({ id, rimiCategoryId }: { id: string; rimiCategoryId: number | null }) => {
-      return apiRequest('PATCH', `/api/categories/${id}/rimi`, { rimiCategoryId });
+    mutationFn: async ({ id, rimiCategoryId, rimiCategoryName }: { id: string; rimiCategoryId: number | null; rimiCategoryName: string | null }) => {
+      return apiRequest('PATCH', `/api/categories/${id}/rimi`, { rimiCategoryId, rimiCategoryName });
     },
     onSuccess: () => {
       invalidateCategories();
@@ -1017,7 +1015,7 @@ export default function Home() {
                     onToggleGrocery={(id, isGrocery) => updateGroceryMutation.mutate({ id, isGrocery })}
                     onMarkWithDescendants={(id, isGrocery) => updateWithDescendantsMutation.mutate({ id, isGrocery })}
                     rimiCategories={rimiCategories || []}
-                    onUpdateRimiCategory={(id, rimiCategoryId) => updateRimiCategoryMutation.mutate({ id, rimiCategoryId })}
+                    onUpdateRimiCategory={(id, rimiCategoryId, rimiCategoryName) => updateRimiCategoryMutation.mutate({ id, rimiCategoryId, rimiCategoryName })}
                   />
                 ) : storedCategories?.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 text-center">

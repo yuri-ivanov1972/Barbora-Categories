@@ -28,6 +28,7 @@ export const storedCategories = pgTable("stored_categories", {
   fullPath: text("full_path").notNull(),
   isGrocery: boolean("is_grocery").notNull().default(true),
   rimiCategoryId: integer("rimi_category_id"),
+  rimiCategoryName: text("rimi_category_name"),
   scrapedAt: timestamp("scraped_at").notNull().defaultNow(),
 });
 
